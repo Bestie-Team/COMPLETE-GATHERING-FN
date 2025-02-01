@@ -6,3 +6,6 @@ node_modules
 
 # build
 dist
+
+# handler zip file
+handler.zip
