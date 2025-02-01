@@ -30,7 +30,6 @@ export const handler = async (event: any) => {
       }),
     };
   } catch (e: unknown) {
-    console.log(e);
     return {
       statusCode: 500,
       body: JSON.stringify({
@@ -43,5 +42,3 @@ export const handler = async (event: any) => {
     await client.end();
   }
 };
-
-handler('');
