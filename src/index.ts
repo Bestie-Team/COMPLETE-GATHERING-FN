@@ -1,18 +1,18 @@
 import pg from "pg";
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
-export const handler = async (event: any) => {
-  const { Client } = pg;
-  const client = new Client({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-  });
+const { Client } = pg;
+const client = new Client({
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+});
 
+export const handler = async (event: any) => {
   try {
     await client.connect();
 
@@ -33,11 +33,11 @@ export const handler = async (event: any) => {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: '모임 완료 업데이트 실패.',
+        message: "모임 완료 업데이트 실패.",
         error: (e as Error).message,
         timestamp: new Date().toISOString(),
-      })
-    }
+      }),
+    };
   } finally {
     await client.end();
   }
