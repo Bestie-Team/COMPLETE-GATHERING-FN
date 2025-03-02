@@ -17,7 +17,7 @@ export class Reader {
       FROM gathering
       WHERE deleted_at IS NULL
       AND ended_at IS NULL
-      AND gathering_data < ${now}
+      AND gathering_date < $1
     `,
       [now]
     );

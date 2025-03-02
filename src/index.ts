@@ -22,7 +22,7 @@ export const handler = async (event: any) => {
     const gatheringIds = gatherings.map((gathering) => gathering.id);
     const groupIds = gatherings
       .map((gathering) => gathering.group_id)
-      .filter((id) => id !== null);
+      .filter((id) => id !== null) as string[];
 
     try {
       await client.query("BEGIN");
