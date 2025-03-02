@@ -1,31 +1,49 @@
-import pg from "pg";
-import * as dotenv from "dotenv";
+import { Client } from "pg";
+import { client } from "./db/connection";
+import { Reader } from "./db/reader";
+import { Writer } from "./db/writer";
 
-dotenv.config();
+const initialize = async (client: Client) => {
+  await client.connect();
+  const reader = new Reader(client);
+  const writer = new Writer(client);
 
-const { Client } = pg;
-const client = new Client({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-});
+  return {
+    reader,
+    writer,
+  };
+};
 
 export const handler = async (event: any) => {
   try {
-    await client.connect();
-
+    const { reader, writer } = await initialize(client);
     const currentDate = new Date().toISOString();
-    const query =
-      "UPDATE gathering SET ended_at = $1 WHERE ended_at IS NULL AND gathering_date < $2";
+    const gatherings = await reader.findCompletedGathering(currentDate);
+    const gatheringIds = gatherings.map((gathering) => gathering.id);
+    const groupIds = gatherings
+      .map((gathering) => gathering.group_id)
+      .filter((id) => id !== null);
 
-    const result = await client.query(query, [currentDate, currentDate]);
+    try {
+      await client.query("BEGIN");
+
+      if (gatheringIds.length > 0) {
+        await writer.updateGatheringEndedAtBulk(gatheringIds, currentDate);
+      }
+      if (groupIds.length > 0) {
+        await writer.updateGroupCountBulk(groupIds);
+      }
+
+      await client.query("COMMIT");
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    }
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: `${result.rowCount}개의 모임이 완료 됨.`,
+        message: `모임 완료: ${gatheringIds.length}건, 그룹: ${groupIds.length}건`,
         timestamp: currentDate,
       }),
     };
