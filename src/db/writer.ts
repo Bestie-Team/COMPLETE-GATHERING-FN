@@ -34,4 +34,11 @@ export class Writer {
       [ids]
     );
   }
+
+  async deletePendingInvitation(gatheringIds: string[]) {
+    await this.client.query(
+      `DELETE FROM gathering_participation WHERE gathering_id = ANY($1) AND status = 'PENDING'`,
+      [gatheringIds]
+    );
+  }
 }

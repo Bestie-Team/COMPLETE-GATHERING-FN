@@ -19,6 +19,7 @@ export const handler = async (event: any) => {
     const { reader, writer } = await initialize(client);
     const currentDate = new Date().toISOString();
     const gatherings = await reader.findCompletedGathering(currentDate);
+
     const gatheringIds = gatherings.map((gathering) => gathering.id);
     const groupIds = gatherings
       .map((gathering) => gathering.group_id)
@@ -28,6 +29,7 @@ export const handler = async (event: any) => {
       await client.query("BEGIN");
 
       if (gatheringIds.length > 0) {
+        await writer.deletePendingInvitation(gatheringIds);
         await writer.updateGatheringEndedAtBulk(gatheringIds, currentDate);
       }
       if (groupIds.length > 0) {
