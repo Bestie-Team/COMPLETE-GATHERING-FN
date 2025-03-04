@@ -1,10 +1,9 @@
 import { Client } from "pg";
-import { client } from "./db/connection";
 import { Reader } from "./db/reader";
 import { Writer } from "./db/writer";
+import { client } from "./db/connection";
 
 const initialize = async (client: Client) => {
-  await client.connect();
   const reader = new Reader(client);
   const writer = new Writer(client);
 
